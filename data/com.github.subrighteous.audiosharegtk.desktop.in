@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=AudioShareGtk
+Exec=audiosharegtk
+Icon=com.github.subrighteous.audiosharegtk
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=GTK;
+StartupNotify=true
+DBusActivatable=true
+Actions=Quit;

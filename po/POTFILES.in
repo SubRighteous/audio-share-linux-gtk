@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/com.github.subrighteous.audiosharegtk.desktop.in
+data/com.github.subrighteous.audiosharegtk.metainfo.xml.in
+data/com.github.subrighteous.audiosharegtk.gschema.xml
+src/window.ui

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="AudiosharegtkWindow" parent="AdwApplicationWindow">
+    <property name="title" translatable="yes">AudioShareGTK</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <property name="content">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="primary">True</property>
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Main Menu</property>
+                <property name="menu-model">primary_menu</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwClamp">
+             <property name="maximum-size">1366</property>
+            <property name="margin-start">12</property>
+            <property name="margin-end">12</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">6</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">1</property>
+        <property name="valign">3</property>
+        <child>
+          <object class="GtkImage">
+            <property name="name">logo</property>
+            <property name="icon-name">com.github.subrighteous.audiosharegtk</property>
+            <property name="pixel-size">196</property>
+            <property name="margin-bottom">30</property>
+            <style>
+              <class name="icon-dropshadow"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkFlowBox">
+            <property name="homogeneous">true</property>
+            <property name="max-children-per-line">2</property>
+            <property name="row-spacing">32</property>
+            <property name="column-spacing">32</property>
+            <property name="selection-mode">0</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">1</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Server IP</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="server_ip_entry">
+                    <property name="placeholder-text" translatable="yes">192.168.1.15</property>
+                    <property name="input-purpose">3</property>
+                    <property name="input-hints">2</property>
+
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">1</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Server Port</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="server_port_entry">
+                    <property name="placeholder-text">65530</property>
+                    <property name="input-purpose">3</property>
+                    <property name="input-hints">2</property>
+
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">1</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Audio Endpoints</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkDropDown" id="AudioEndpoint_Dropdown"></object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="AudioEncoding_Box">
+                <property name="orientation">1</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Audio Encoding</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkDropDown" id="AudioEncoding_Dropdown"></object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-top">24</property>
+            <property name="margin-bottom">24</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">3</property>
+            <property name="valign">3</property>
+            <property name="spacing">32</property>
+            <property name="margin-bottom">24</property>
+            <child>
+              <object class="GtkButton" id="toggle_server">
+                <property name="label" translatable="yes">Start</property>
+                <property name="tooltip-text" translatable="yes">Start/Stop Server</property>
+                <property name="css-classes">success</property>
+                <property name="action-name">app.toggle_server</property>
+                <!-- <attribute name="action">app.toggle_server</attribute> -->
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="ResetServerButton">
+                <property name="label" translatable="yes">Reset</property>
+                <property name="tooltip-text" translatable="yes">Reset Server and restore default values</property>
+                <property name="css-classes">warning</property>
+                <property name="action-name">app.reset_server_settings</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+
+        </property>
+      </object>
+    </property>
+  </template>
+  <menu id="primary_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
+        <attribute name="action">app.shortcuts</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_About AudioShareGTK</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Quit</attribute>
+        <attribute name="action">app.force_quit</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>
