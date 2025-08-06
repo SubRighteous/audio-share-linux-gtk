@@ -8,4 +8,3 @@ Categories=Utility;
 Keywords=GTK;
 StartupNotify=true
 DBusActivatable=true
-Actions=Quit;

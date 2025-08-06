@@ -4,4 +4,4 @@ Cargo.lock
 
 data/as-cmd
 
-com.github.subrighteous.audiosharegtk.json~
+*.json~
