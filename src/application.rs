@@ -116,7 +116,7 @@ impl AudiosharegtkApplication {
             .property("flags", flags)
             .property(
                 "resource-base-path",
-                "/com/github/subrighteous/audiosharegtk",
+                "/com/subrighteous/audiosharegtk",
             )
             .build()
     }
@@ -165,7 +165,7 @@ impl AudiosharegtkApplication {
         ]);
 
         // Setup Keyboard Shortcuts
-        self.set_accels_for_action("app.shortcuts", &["<Ctrl><Shift>/"]);
+        self.set_accels_for_action("app.shortcuts", &["<Ctrl><Shift>question"]);
         self.set_accels_for_action("app.toggle_server", &["<Ctrl>E"]);
         self.set_accels_for_action("app.reset_server_settings", &["<Ctrl>R"]);
     }
@@ -174,7 +174,7 @@ impl AudiosharegtkApplication {
         let window = self.active_window().unwrap();
         let about = adw::AboutDialog::builder()
             .application_name("AudioShareGtk")
-            .application_icon("com.github.subrighteous.audiosharegtk")
+            .application_icon("com.subrighteous.audiosharegtk")
             .developer_name("Daniel Rys")
             .version(VERSION)
             .developers(vec!["Daniel Rys"])
@@ -239,7 +239,7 @@ impl AudiosharegtkApplication {
 
     fn show_settings(&self) {
         let builder = gtk::Builder::from_resource(
-            "/com/github/subrighteous/audiosharegtk/preferences_dialog.ui",
+            "/com/subrighteous/audiosharegtk/preferences_dialog.ui",
         );
 
         let window = self.active_window().unwrap();
@@ -642,7 +642,7 @@ impl AudiosharegtkApplication {
 
         let notification = gio::Notification::new("audio_share_error");
         notification.set_icon(&gio::ThemedIcon::new(
-            "com.github.subrighteous.audiosharegtk",
+            "com.subrighteous.audiosharegtk",
         ));
 
         if reason == &audioshare::ProcessStopReason::InvalidArgument {
@@ -655,7 +655,7 @@ impl AudiosharegtkApplication {
             notification.set_body(Some("Please check the ip address and port then try again."));
         }
 
-        self.send_notification(Some("com.github.subrighteous.audiosharegtk"), &notification);
+        self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
 
         //
         if let Some(win) = self.main_window() {
