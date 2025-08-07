@@ -34,7 +34,7 @@
         <child>
           <object class="GtkImage">
             <property name="name">logo</property>
-            <property name="icon-name">com.github.subrighteous.audiosharegtk</property>
+            <property name="icon-name">com.subrighteous.audiosharegtk</property>
             <property name="pixel-size">196</property>
             <property name="margin-bottom">30</property>
             <style>

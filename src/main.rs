@@ -47,7 +47,7 @@ fn main() -> glib::ExitCode {
     // Create a new GtkApplication. The application manages our main loop,
     // application windows, integration with the window manager/compositor, and
     // desktop features such as file opening and single-instance applications.
-    let app = AudiosharegtkApplication::new("com.github.subrighteous.audiosharegtk", &gio::ApplicationFlags::empty());
+    let app = AudiosharegtkApplication::new("com.subrighteous.audiosharegtk", &gio::ApplicationFlags::empty());
 
     audioshare::get_version();
 

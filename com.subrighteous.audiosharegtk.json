@@ -1,5 +1,5 @@
 {
-    "id" : "com.github.subrighteous.audiosharegtk",
+    "id" : "com.subrighteous.audiosharegtk",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",

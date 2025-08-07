@@ -1,4 +1,4 @@
-application_id = 'com.github.subrighteous.audiosharegtk'
+application_id = 'com.subrighteous.audiosharegtk'
 
 scalable_dir = 'hicolor' / 'scalable' / 'apps'
 install_data(

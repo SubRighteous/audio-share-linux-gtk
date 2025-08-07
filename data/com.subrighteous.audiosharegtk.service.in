@@ -1,3 +1,3 @@
 [D-BUS Service]
-Name=com.github.subrighteous.audiosharegtk
+Name=com.subrighteous.audiosharegtk
 Exec=@bindir@/audiosharegtk --gapplication-service

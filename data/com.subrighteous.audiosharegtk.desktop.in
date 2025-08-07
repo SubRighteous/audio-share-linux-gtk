@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=AudioShareGtk
 Exec=audiosharegtk
-Icon=com.github.subrighteous.audiosharegtk
+Icon=com.subrighteous.audiosharegtk
 Terminal=false
 Type=Application
 Categories=Utility;

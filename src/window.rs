@@ -30,7 +30,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/com/github/subrighteous/audiosharegtk/window.ui")]
+    #[template(resource = "/com/subrighteous/audiosharegtk/window.ui")]
     pub struct AudiosharegtkWindow {
         // Configuration File Data
         pub config: OnceCell<RefCell<AppConfig>>,
