@@ -243,13 +243,9 @@ impl AudiosharegtkApplication {
         );
 
         let window = self.active_window().unwrap();
-        let preferences: adw::Dialog = builder
+        let preferences: adw::PreferencesDialog = builder
             .object("preferences_dialog")
-            .expect("Failed to get AwaDialog");
-
-        let close_button: gtk::Button = builder
-            .object("close_button")
-            .expect("Failed to get close_button");
+            .expect("Failed to get AwaPreferencesDialog");
 
         let do_nothing_check_button: gtk::CheckButton = builder
             .object("DoNothing_CheckButton")
@@ -271,56 +267,66 @@ impl AudiosharegtkApplication {
             .object("MinimizeToTray_CheckButton")
             .expect("Failed to get MinimizeToTray_CheckButton");
 
+        let notifications_errors_switch: adw::SwitchRow = builder
+            .object("notifications_errors")
+            .expect("Failed to get notifications_errors");
+
+        let notifications_connection_switch: adw::SwitchRow = builder
+            .object("notifications_connection")
+            .expect("Failed to get notifications_connection");
+
+        let notifications_disconnection_switch: adw::SwitchRow = builder
+            .object("notifications_disconnection")
+            .expect("Failed to get notifications_disconnection");
+
         if let Some(win) = self.main_window() {
-            if let Some(config_ref) = win.imp().config.get() {
-                let config = config_ref.borrow();
+             if let Some(config_ref) = win.clone().imp().config.get() {
+                 let config = config_ref.borrow();
 
-                // TODO : Replace with actual saved states settings
-                do_nothing_check_button
-                    .set_active(!(config.auto_start_server || config.keep_last_state));
-                keep_last_state_check_button.set_active(config.keep_last_state);
-                start_server_check_button.set_active(config.auto_start_server);
 
-                exit_checkbutton.set_active(!(config.minimize_on_exit));
-                minimize_to_tray_checkbutton.set_active(config.minimize_on_exit);
-            }
+                 do_nothing_check_button
+                 .set_active(!(config.auto_start_server || config.keep_last_state));
 
-            // Clone a strong reference to the window (so we can use it in the closure)
-            let window_clone = win.clone();
+                 keep_last_state_check_button.set_active(config.keep_last_state);
+                 start_server_check_button.set_active(config.auto_start_server);
 
-            close_button.connect_clicked({
-                let preferences = preferences.clone();
-                move |_| {
-                    // TODO: Save the settings picked from preferences dialog
+                 exit_checkbutton.set_active(!(config.minimize_on_exit));
+                 minimize_to_tray_checkbutton.set_active(config.minimize_on_exit);
+
+                 notifications_errors_switch.set_active(config.notification_error);
+                 notifications_connection_switch.set_active(config.notification_device_connect);
+                 notifications_disconnection_switch.set_active(config.notification_device_disconnect);
+
+                preferences.connect_closed(move |_|{
+                    // Clone a strong reference to the window (so we can use it in the closure)
+                    let window_clone = win.clone();
+
+
                     if let Some(config_refcell) = window_clone.imp().config.get() {
                         let mut config = config_refcell.borrow_mut();
 
-                        // Only update if the config is different then the ui
+                        //Only update if the config is different then the ui
                         if config.minimize_on_exit != minimize_to_tray_checkbutton.is_active()
                             || config.keep_last_state != keep_last_state_check_button.is_active()
                             || config.auto_start_server != start_server_check_button.is_active()
+                            || config.notification_error != notifications_errors_switch.is_active()
+                            || config.notification_device_connect != notifications_connection_switch.is_active()
+                            || config.notification_device_disconnect != notifications_disconnection_switch.is_active()
                         {
                             config.minimize_on_exit = minimize_to_tray_checkbutton.is_active();
                             config.keep_last_state = keep_last_state_check_button.is_active();
                             config.auto_start_server = start_server_check_button.is_active();
+                            config.notification_error = notifications_errors_switch.is_active();
+                            config.notification_device_connect = notifications_connection_switch.is_active();
+                            config.notification_device_disconnect = notifications_disconnection_switch.is_active();
 
                             let _ = save_config(&config);
                         }
                     } else {
                         println!("No config set yet.");
                     }
-
-                    preferences.close();
-                }
-            });
-        } else {
-            // Make sure if all else fails we can still close the window
-            close_button.connect_clicked({
-                let preferences = preferences.clone();
-                move |_| {
-                    preferences.close();
-                }
-            });
+                });
+            }
         }
 
         preferences.present(Some(&window));
@@ -454,7 +460,7 @@ impl AudiosharegtkApplication {
             self.set_server_active(false);
 
             if let Some(win) = self.main_window() {
-                win.imp().toggle_server.set_label("Start");
+                win.imp().toggle_server.set_label(&gettext("Start"));
                 win.imp().toggle_server.add_css_class("success");
                 win.imp().toggle_server.remove_css_class("error");
 
@@ -494,7 +500,7 @@ impl AudiosharegtkApplication {
             self.set_server_active(false);
 
             if let Some(win) = self.main_window() {
-                win.imp().toggle_server.set_label("Start");
+                win.imp().toggle_server.set_label(&gettext("Start"));
                 win.imp().toggle_server.add_css_class("success");
                 win.imp().toggle_server.remove_css_class("error");
 
@@ -517,7 +523,7 @@ impl AudiosharegtkApplication {
             self.set_server_active(true);
 
             if let Some(win) = self.main_window() {
-                win.imp().toggle_server.set_label("Stop");
+                win.imp().toggle_server.set_label(&gettext("Stop"));
                 win.imp().toggle_server.remove_css_class("success");
                 win.imp().toggle_server.add_css_class("error");
 
@@ -590,6 +596,14 @@ impl AudiosharegtkApplication {
                     .borrow()
                     .subscribe_stop_event();
 
+                let mut device_rx = self
+                    .imp()
+                    .audio_share_server_thread
+                    .get()
+                    .expect("AudioShareServerThread not initialized")
+                    .borrow()
+                    .subscribe_device_event();
+
                 // Start Server
                 self.imp()
                     .audio_share_server_thread
@@ -605,8 +619,13 @@ impl AudiosharegtkApplication {
 
                 let self_clone = self.clone();
 
-                //
+                // Assign an async function when the signal that the server process stoppped
                 glib::MainContext::default().spawn_local(async move {
+                    while let Ok((device_ip, connect_status)) = device_rx.recv().await {
+                        // Safe to call GTK functions here
+                        self_clone.on_device_connect(device_ip, connect_status);
+                    }
+
                     if rx.changed().await.is_ok() {
                         if let Some(reason) = rx.borrow().as_ref() {
                             println!("Process stopped: {:?}", reason);
@@ -622,10 +641,10 @@ impl AudiosharegtkApplication {
                                         config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
 
                                         let endpoint_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_endpoint_dropdown);
-                                        config.audio_endpoint = endpoint_selected_name.expect("Failed to get endpoint dropdown string");
+                                        config.audio_endpoint = endpoint_selected_name.expect(&gettext("Failed to get endpoint dropdown string"));
 
                                         let encoding_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_encoding_dropdown);
-                                        config.audio_encoding = encoding_selected_name.expect("Failed to get encoding dropdown string");
+                                        config.audio_encoding = encoding_selected_name.expect(&gettext("Failed to get encoding dropdown string"));
 
                                         let _ = save_config(&config);
                                     }
@@ -638,6 +657,42 @@ impl AudiosharegtkApplication {
         }
     }
 
+    fn on_device_connect(&self, device_ip: String , connected: bool){
+
+        let notification = gio::Notification::new("audio_share_info");
+        notification.set_icon(&gio::ThemedIcon::new(
+            "com.subrighteous.audiosharegtk",
+        ));
+
+        if connected {
+            notification.set_title(&gettext("Device Connected"));
+            let message = device_ip.clone() + " " + &gettext("connected from the server");
+            notification.set_body(Some(&message));
+        }
+        else{
+            notification.set_title(&gettext("Device Disconnected"));
+            let message = device_ip.clone() + " " + &gettext("disconnected from the server");
+            notification.set_body(Some(&message));
+        }
+
+        if let Some(win) = self.main_window() {
+
+            if let Some(config_data) = win.imp().config.get() {
+                let config = config_data.borrow_mut(); // Get Ref<AppConfig>
+                if config.notification_device_connect && connected{
+                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+                }
+                if config.notification_device_disconnect && !connected{
+                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+                }
+
+            }
+
+        }
+
+
+    }
+
     fn on_server_error(&self, reason: &audioshare::ProcessStopReason) {
 
         let notification = gio::Notification::new("audio_share_error");
@@ -646,25 +701,40 @@ impl AudiosharegtkApplication {
         ));
 
         if reason == &audioshare::ProcessStopReason::InvalidArgument {
-            notification.set_title("Invalid Ip Address");
-            notification.set_body(Some("Please check the ip address and port then try again."));
+            notification.set_title(&gettext("Invalid Ip Address"));
+            notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
         }
 
         if reason == &audioshare::ProcessStopReason::InvalidBinding {
-            notification.set_title("Cannot assign requested address");
-            notification.set_body(Some("Please check the ip address and port then try again."));
+            notification.set_title(&gettext("Cannot assign requested address"));
+            notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
         }
 
-        self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+        if reason == &audioshare::ProcessStopReason::FirewallBlocked{
+            notification.set_title(&gettext("Blocked by Local Firewall"));
+            notification.set_body(Some(&gettext("Firewall settings are blocking the incoming connection. Please add a firewall rule for ipv4 udp and tcp")));
+        }
 
         //
         if let Some(win) = self.main_window() {
+
+            if let Some(config_data) = win.imp().config.get() {
+                let config = config_data.borrow_mut(); // Get Ref<AppConfig>
+                if config.notification_error{
+                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+                }
+
+            }
+
             win.imp().toggle_server.set_label("Start");
             win.imp().toggle_server.add_css_class("success");
             win.imp().toggle_server.remove_css_class("error");
 
             win.imp().server_ip_entry.set_editable(true);
             win.imp().server_port_entry.set_editable(true);
+
+            win.imp().server_ip_entry.set_secondary_icon_name(None);
+            win.imp().server_port_entry.set_secondary_icon_name(None);
         }
 
         self.set_server_active(false);

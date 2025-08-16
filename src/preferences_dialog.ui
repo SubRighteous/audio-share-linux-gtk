@@ -2,111 +2,102 @@
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="adw" version="1.4"/>
-  <object class="AdwDialog" id="preferences_dialog">
-    <child type="content">
-      <object class="AdwToolbarView">
-        <child type="top">
-          <object class="GtkHeaderBar">
-            <property name="show-title-buttons">false</property>
-            <child type="end">
-              <object class="GtkButton" id="close_button">
-                <property name="icon-name">window-close-symbolic</property>
-                <property name="tooltip-text">Close</property>
-              </object>
+  <object class="AdwPreferencesDialog" id="preferences_dialog">
+    <property name="content-width">600</property>
+    <property name="content-height">500</property>
+    <property name="title" translatable="yes">Preferences</property>
+    <child>
+      <object class="AdwPreferencesPage" id="app_behaviour_page">
+        <property name="title" translatable="yes">App behavior</property>
+        <property name="icon-name">emblem-system-symbolic</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">On App Startup</property>
+            <property name="description" translatable="yes">Change the behavior when the app starts</property>
+            <child>
+                <object class="GtkBox">
+                  <property name="halign">3</property>
+                  <property name="valign">3</property>
+                  <property name="spacing">24</property>
+                  <child>
+                    <object class="GtkCheckButton" id="DoNothing_CheckButton">
+                      <property name="label" translatable="yes">Do Nothing</property>
+                    </object>
+                  </child>
+                  <child>
+                    <object class="GtkCheckButton" id="StartServer_CheckButton">
+                      <property name="label" translatable="yes">Start Server</property>
+                      <property name="group">DoNothing_CheckButton</property>
+                    </object>
+                  </child>
+                  <child>
+                    <object class="GtkCheckButton" id="KeepLastState_CheckButton">
+                      <property name="label" translatable="yes">Keep Last State</property>
+                      <property name="group">DoNothing_CheckButton</property>
+                    </object>
+                  </child>
+                </object>
             </child>
-            <property name="title-widget">
-              <object class="GtkLabel">
-                <property name="label">Preferences</property>
-                <style>
-                  <class name="title"/>
-                </style>
-              </object>
-            </property>
           </object>
         </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">On App Close</property>
+            <property name="description" translatable="yes">Change the behavior when the app closes</property>
+            <child>
+                <object class="GtkBox">
+                  <property name="halign">3</property>
+                  <property name="valign">3</property>
+                  <property name="spacing">24</property>
+                  <property name="margin-bottom">24</property>
+                  <child>
+                    <object class="GtkCheckButton" id="Exit_CheckButton">
+                      <property name="label" translatable="yes">Exit</property>
+                    </object>
+                  </child>
+                  <child>
+                    <object class="GtkCheckButton" id="MinimizeToTray_CheckButton">
+                      <property name="label" translatable="yes">Minimize</property>
+                      <property name="group">Exit_CheckButton</property>
+                    </object>
+                  </child>
+                </object>
+            </child>
+        </object>
+      </child>
+
+  <!-- End of App Behavior Page -->
+  </object>
+  </child>
+  <child>
+    <object class="AdwPreferencesPage" id="notifications_behaviour_page">
+        <property name="title" translatable="yes">Notifications</property>
+        <property name="icon-name">emoji-objects-symbolic</property>
 
         <child>
-          <object class="GtkBox">
-            <property name="orientation">1</property>
-            <property name="spacing">12</property>
-            <property name="margin-top">18</property>
-            <property name="margin-bottom">24</property>
-            <property name="margin-start">24</property>
-            <property name="margin-end">24</property>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Notifications</property>
+            <property name="description" translatable="yes">Change what system notifications showup</property>
             <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">On App Startup</property>
-                <property name="margin-bottom">18</property>
-                <property name="margin-bottom">24</property>
-                <style>
-                  <class name="title-2"/>
-                </style>
+              <object class="AdwSwitchRow" id="notifications_errors">
+                <property name="title" translatable="yes">Server Errors</property>
               </object>
             </child>
             <child>
-              <object class="GtkBox">
-                <property name="halign">3</property>
-                <property name="valign">3</property>
-                <property name="spacing">24</property>
-                <child>
-                  <object class="GtkCheckButton" id="DoNothing_CheckButton">
-                    <property name="label" translatable="yes">Do Nothing</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="StartServer_CheckButton">
-                    <property name="label" translatable="yes">Start Server</property>
-                    <property name="group">DoNothing_CheckButton</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="KeepLastState_CheckButton">
-                    <property name="label" translatable="yes">Keep Last State</property>
-                    <property name="group">DoNothing_CheckButton</property>
-                  </object>
-                </child>
+              <object class="AdwSwitchRow" id="notifications_connection">
+                <property name="title" translatable="yes">Device Connect</property>
               </object>
             </child>
             <child>
-              <object class="GtkSeparator">
-                <property name="margin-top">18</property>
-                <property name="margin-bottom">24</property>
+              <object class="AdwSwitchRow" id="notifications_disconnection">
+                <property name="title" translatable="yes">Device Disconnect</property>
               </object>
             </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label">On Window Close</property>
-                <property name="margin-bottom">24</property>
-                <style>
-                  <class name="title-2"/>
-                </style>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="halign">3</property>
-                <property name="valign">3</property>
-                <property name="spacing">24</property>
-                <property name="margin-bottom">24</property>
-                <child>
-                  <object class="GtkCheckButton" id="Exit_CheckButton">
-                    <property name="label" translatable="yes">Exit</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="MinimizeToTray_CheckButton">
-                    <property name="label" translatable="yes">Minimize</property>
-                    <property name="group">Exit_CheckButton</property>
-                  </object>
-                </child>
-              </object>
-            </child>
+
           </object>
         </child>
-      </object>
-    </child>
-
-
-
-  </object>
+    </object>
+  </child>
+</object>
 </interface>
+

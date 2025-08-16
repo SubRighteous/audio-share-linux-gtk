@@ -15,7 +15,9 @@ pub struct AppConfig {
     pub auto_start_server: bool,
     pub keep_last_state: bool,
     pub last_server_state: bool,
-    pub as_cmd_path: PathBuf,
+    pub notification_error: bool,
+    pub notification_device_connect: bool,
+    pub notification_device_disconnect: bool,
 }
 
 pub fn get_config_path() -> Option<PathBuf> {
@@ -59,7 +61,9 @@ pub fn load_or_create_config() -> io::Result<AppConfig> {
             auto_start_server: false,
             keep_last_state: false,
             last_server_state: false,
-            as_cmd_path: PathBuf::from("~/audio-share-server-cmd/bin"),
+            notification_error: true,
+            notification_device_connect: true,
+            notification_device_disconnect: true,
         };
 
         if let Some(parent) = path.parent() {

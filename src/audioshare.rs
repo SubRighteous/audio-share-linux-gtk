@@ -7,6 +7,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 
 use tokio::sync::watch;
+use tokio::sync::broadcast;
 
 pub fn get_local_ipv4() -> String {
     if let Ok(interfaces) = get_if_addrs() {
@@ -151,16 +152,59 @@ pub fn get_version() {
     println!("\n{}\n", "----------");
 }
 
+fn get_firewalld_rule_exists(address: &str, port: &u16) -> bool {
+    // Try running firewall-cmd, exit early if it's not installed
+    let output = Command::new("firewall-cmd")
+        .arg("--list-rich-rules")
+        .output();
+
+    let output = match output {
+        Ok(o) if o.status.success() => o,
+        _ => return true, // If firewall-cmd doesn't exist, assume OK
+    };
+
+    let rules = String::from_utf8_lossy(&output.stdout);
+
+    let tcp_rule = format!("destination address=\"{}\" port port=\"{}\" protocol=\"tcp\"", address, port);
+    let udp_rule = format!("destination address=\"{}\" port port=\"{}\" protocol=\"udp\"", address, port);
+
+    rules.contains(&tcp_rule) && rules.contains(&udp_rule)
+}
+
+fn get_ufw_rule_exists(address: &str, port: &u16) -> bool {
+    let output = std::process::Command::new("ufw")
+        .arg("status")
+        .arg("numbered")
+        .output();
+
+    let output = match output {
+        Ok(o) if o.status.success() => o,
+        _ => return true, // Assume OK if ufw is not installed
+    };
+
+    let rules = String::from_utf8_lossy(&output.stdout);
+    let tcp_rule = format!("{}:{} ALLOW", address, port);
+    let udp_rule = format!("{}:{} ALLOW", address, port);
+
+    rules.contains(&tcp_rule) && rules.contains(&udp_rule)
+}
+
+fn firewall_allows(address: &str, port: &u16) -> bool {
+    get_firewalld_rule_exists(address, port) && get_ufw_rule_exists(address, port)
+}
+
 // A message to send when the process stops
 #[derive(Debug , Clone, PartialEq, Eq)]
 pub enum ProcessStopReason {
     InvalidBinding,
     InvalidArgument,
+    FirewallBlocked,
     ExitedSuccessfully,
     Resetting,
     ExitedWithError(Option<i32>),
     FailedToKill,
 }
+
 
 // AudioShare Thread
 #[derive(Debug)]
@@ -168,20 +212,27 @@ pub struct AudioShareServerThread {
     pub server_child: Arc<Mutex<Option<Child>>>,
     pub running: Arc<Mutex<bool>>,
     pub process_stop_notifier: watch::Sender<Option<ProcessStopReason>>,
+    pub device_connected_notifier: broadcast::Sender<(String, bool)>,
 }
 
 impl AudioShareServerThread {
     pub fn new() -> Self {
         let (tx, _rx) = watch::channel(None);
+        let (device_tx, _rx) = broadcast::channel::<(String, bool)>(16);
         Self {
             server_child: Arc::new(Mutex::new(None)),
             running: Arc::new(Mutex::new(false)),
             process_stop_notifier: tx,
+            device_connected_notifier: device_tx,
         }
     }
 
     pub fn subscribe_stop_event(&self) -> watch::Receiver<Option<ProcessStopReason>> {
         self.process_stop_notifier.subscribe()
+    }
+
+    pub fn subscribe_device_event(&self) -> broadcast::Receiver<(String, bool)>{
+        self.device_connected_notifier.subscribe()
     }
 
     pub fn start(
@@ -204,6 +255,15 @@ impl AudioShareServerThread {
             return;
         }
 
+         if firewall_allows(&server_ip, &server_port) == false {
+            let stop_notifier = self.process_stop_notifier.clone();
+
+            let reason = ProcessStopReason::FirewallBlocked;
+            let _ = stop_notifier.send(Some(reason));
+
+            return;
+        }
+
         println!("Starting server thread with server ip : {server_ip} server port : {server_port} endpoint ID: {endpoint_id}, encoding key: {encoding_key}");
 
         let binding_arg: String = format!("--bind={}:{}", &server_ip, &server_port.to_string());
@@ -216,6 +276,7 @@ impl AudioShareServerThread {
             .arg(&endpoint_id.to_string())
             .arg("--encoding")
             .arg(&encoding_key)
+            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn();
 
@@ -223,13 +284,49 @@ impl AudioShareServerThread {
             Ok(mut child) => {
                 // Spawn a new thread to read the child process's stdout
                 let child_stdout = child.stderr.take().unwrap();
+                let child_stdinfo = child.stdout.take().unwrap();
                 let child_id = self.server_child.clone();
                 let running_flag = self.running.clone();
+                let running_flag_stdout = self.running.clone();
 
                 let stop_notifier = self.process_stop_notifier.clone();
+                let device_connected_notifier = self.device_connected_notifier.clone();
 
                 *guard = Some(child);
 
+                // Thread for stdout
+                std::thread::spawn(move || {
+                    let reader = BufReader::new(child_stdinfo);
+                    for line in reader.lines().flatten() {
+                        println!("[AS-CMD Out]: {}", line);
+                        if line.contains("[info] accept"){
+                            // Split by spaces and take the last part
+                            if let Some(last) = line.split_whitespace().last() {
+                                // Split by ':' to separate IP and port
+                                if let Some((ip, _port)) = last.split_once(':') {
+                                    //println!("IP detected: {}", ip);
+                                    let _ = device_connected_notifier.send((ip.to_string(), true));
+                                }
+                            }
+
+                        }
+
+                        if line.contains("[info] close"){
+                            // Split by spaces and take the last part
+                            if let Some(last) = line.split_whitespace().last() {
+                                // Split by ':' to separate IP and port
+                                if let Some((ip, _port)) = last.split_once(':') {
+                                    //println!("Close IP detected: {}", ip);
+                                    let _ = device_connected_notifier.send((ip.to_string(), false));
+                                }
+                            }
+
+                        }
+                    }
+                    *running_flag_stdout.lock().unwrap() = false;
+                });
+
+                // Thread of stderror
                 std::thread::spawn(move || {
                     let reader = BufReader::new(child_stdout);
 
@@ -310,27 +407,6 @@ impl AudioShareServerThread {
     }
 
     pub fn is_running(&self) -> bool {
-        // let mut guard = self.server_child.lock().unwrap();
-
-        // if let Some(server_child) = guard.as_mut() {
-        //     match server_child.try_wait() {
-        //         Ok(Some(_status)) => {
-        // Process has exited
-        //             *guard = None;
-        //             false
-        //         }
-        //         Ok(None) => {
-        // Still running
-        //             true
-        //         }
-        //         Err(e) => {
-        //             eprintln!("Error checking command status: {}", e);
-        //             false
-        //         }
-        //     }
-        // } else {
-        //     false
-        // }
 
         *self.running.lock().unwrap()
     }

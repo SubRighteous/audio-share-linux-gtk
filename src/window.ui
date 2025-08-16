@@ -4,6 +4,8 @@
   <requires lib="Adw" version="1.0"/>
   <template class="AudiosharegtkWindow" parent="AdwApplicationWindow">
     <property name="title" translatable="yes">AudioShareGTK</property>
+    <property name="width-request">500</property>
+    <property name="height-request">500</property>
     <property name="default-width">800</property>
     <property name="default-height">600</property>
     <property name="content">
@@ -60,7 +62,7 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="server_ip_entry">
-                    <property name="placeholder-text" translatable="yes">192.168.1.15</property>
+                    <property name="placeholder-text">192.168.1.15</property>
                     <property name="input-purpose">3</property>
                     <property name="input-hints">2</property>
 

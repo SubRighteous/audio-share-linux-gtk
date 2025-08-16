@@ -1,0 +1,164 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-15 15:12-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/application.rs:182
+msgid "translator-credits"
+msgstr ""
+
+#: src/application.rs:457 src/application.rs:497 src/window.ui:134
+msgid "Start"
+msgstr ""
+
+#: src/application.rs:520
+msgid "Stop"
+msgstr ""
+
+#: src/application.rs:625
+msgid "Failed to get endpoint dropdown string"
+msgstr ""
+
+#: src/application.rs:628
+msgid "Failed to get encoding dropdown string"
+msgstr ""
+
+#: src/application.rs:649
+msgid "Invalid Ip Address"
+msgstr ""
+
+#: src/application.rs:650 src/application.rs:655
+msgid "Please check the ip address and port then try again."
+msgstr ""
+
+#: src/application.rs:654
+msgid "Cannot assign requested address"
+msgstr ""
+
+#: src/application.rs:659
+msgid "Blocked by Local Firewall"
+msgstr ""
+
+#: src/application.rs:660
+msgid ""
+"Firewall settings are blocking the incoming connection. Please add a "
+"firewall rule for ipv4 udp and tcp"
+msgstr ""
+
+#: src/preferences_dialog.ui:19
+msgid "Preferences"
+msgstr ""
+
+#: src/preferences_dialog.ui:38
+msgid "On App Startup"
+msgstr ""
+
+#: src/preferences_dialog.ui:53
+msgid "Do Nothing"
+msgstr ""
+
+#: src/preferences_dialog.ui:58
+msgid "Start Server"
+msgstr ""
+
+#: src/preferences_dialog.ui:64
+msgid "Keep Last State"
+msgstr ""
+
+#: src/preferences_dialog.ui:93
+msgid "Exit"
+msgstr ""
+
+#: src/preferences_dialog.ui:98
+msgid "Minimize"
+msgstr ""
+
+#: src/shortcuts-dialog.ui:6
+msgid "Shortcuts"
+msgstr ""
+
+#: src/shortcuts-dialog.ui:9
+msgctxt "shortcut window"
+msgid "Reset Server"
+msgstr ""
+
+#: src/shortcuts-dialog.ui:15
+msgctxt "shortcut window"
+msgid "Toggle Server"
+msgstr ""
+
+#: src/shortcuts-dialog.ui:21
+msgctxt "shortcut window"
+msgid "Show Shortcuts"
+msgstr ""
+
+#: src/shortcuts-dialog.ui:27
+msgctxt "shortcut window"
+msgid "Quit"
+msgstr ""
+
+#: src/window.ui:6
+msgid "AudioShareGTK"
+msgstr ""
+
+#: src/window.ui:17
+msgid "Main Menu"
+msgstr ""
+
+#: src/window.ui:57
+msgid "Server IP"
+msgstr ""
+
+#: src/window.ui:76
+msgid "Server Port"
+msgstr ""
+
+#: src/window.ui:95
+msgid "Audio Endpoints"
+msgstr ""
+
+#: src/window.ui:109
+msgid "Audio Encoding"
+msgstr ""
+
+#: src/window.ui:135
+msgid "Start/Stop Server"
+msgstr ""
+
+#: src/window.ui:143
+msgid "Reset"
+msgstr ""
+
+#: src/window.ui:144
+msgid "Reset Server and restore default values"
+msgstr ""
+
+#: src/window.ui:162
+msgid "_Preferences"
+msgstr ""
+
+#: src/window.ui:166
+msgid "_Keyboard Shortcuts"
+msgstr ""
+
+#: src/window.ui:170
+msgid "_About AudioShareGTK"
+msgstr ""
+
+#: src/window.ui:174
+msgid "_Quit"
+msgstr ""
