@@ -714,7 +714,7 @@ impl AudiosharegtkApplication {
             notification.set_title(&gettext("Invalid Ip Address"));
             notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
         }
-        print!("{:?}", &reason);
+
         if reason == &audioshare::ProcessStopReason::InvalidBinding {
             notification.set_title(&gettext("Cannot assign requested address"));
             notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));

@@ -304,7 +304,6 @@ impl AudioShareServerThread {
                             if let Some(last) = line.split_whitespace().last() {
                                 // Split by ':' to separate IP and port
                                 if let Some((ip, _port)) = last.split_once(':') {
-                                    //println!("IP detected: {}", ip);
                                     let _ = device_connected_notifier.send((ip.to_string(), true));
                                 }
                             }
@@ -316,7 +315,6 @@ impl AudioShareServerThread {
                             if let Some(last) = line.split_whitespace().last() {
                                 // Split by ':' to separate IP and port
                                 if let Some((ip, _port)) = last.split_once(':') {
-                                    //println!("Close IP detected: {}", ip);
                                     let _ = device_connected_notifier.send((ip.to_string(), false));
                                 }
                             }

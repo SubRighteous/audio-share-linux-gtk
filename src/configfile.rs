@@ -30,7 +30,6 @@ impl AppConfig {
 
         if let Some((_, _id, name)) = audioshare::get_default_endpoint() {
             audio_endpoint_name = name;
-                //println!("Default endpoint -> id: {}, name: {}", id, name);
         }else{
             audio_endpoint_name = String::new();
         }
@@ -111,9 +110,6 @@ pub fn load_or_create_config() -> io::Result<AppConfig> {
     let path = get_config_path().expect("No valid config path available");
 
     if path.exists() {
-        //let data = fs::read_to_string(&path)?;
-        //let config: AppConfig = serde_json::from_str(&data)?;
-
         let config: AppConfig = AppConfig::load(path);
 
         Ok(config)
@@ -126,37 +122,6 @@ pub fn load_or_create_config() -> io::Result<AppConfig> {
 }
 
 pub fn create_config(path: PathBuf) -> io::Result<AppConfig>{
-    // let audio_endpoint_name: String;
-    // let audio_encoding_name: String;
-
-    // let server_ip: String = audioshare::get_local_ipv4();
-
-    // if let Some((_, _id, name)) = audioshare::get_default_endpoint() {
-    //     audio_endpoint_name = name;
-            //println!("Default endpoint -> id: {}, name: {}", id, name);
-    // }else{
-    //     audio_endpoint_name = String::new();
-    // }
-
-    // if let Some((_,desc)) = audioshare::get_default_encoding(){
-    //     audio_encoding_name = desc;
-    // }else{
-    //     audio_encoding_name = String::new();
-    // }
-
-    // let config = AppConfig {
-    //     audio_endpoint: audio_endpoint_name.to_string(),
-    //     audio_encoding: audio_encoding_name.to_string(),
-    //     server_ip: server_ip.to_string(),
-    //     server_port: 65530,
-    //     minimize_on_exit: false,
-    //     auto_start_server: false,
-    //     keep_last_state: false,
-    //     last_server_state: false,
-    //     notification_error: true,
-    //     notification_device_connect: true,
-    //     notification_device_disconnect: true,
-    // };
     let config = AppConfig::default();
 
     if let Some(parent) = path.parent() {
