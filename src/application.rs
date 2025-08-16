@@ -234,6 +234,10 @@ impl AudiosharegtkApplication {
                     self.quit();
                 }
             }
+            else{
+                // Make sure if we can't load the config we can still quit
+                self.quit();
+            }
         }
     }
 
@@ -619,39 +623,45 @@ impl AudiosharegtkApplication {
 
                 let self_clone = self.clone();
 
-                // Assign an async function when the signal that the server process stoppped
+                // Assign an async function when the server process stoppped
+                // or device_connected_notifier broadcasts
                 glib::MainContext::default().spawn_local(async move {
-                    while let Ok((device_ip, connect_status)) = device_rx.recv().await {
-                        // Safe to call GTK functions here
-                        self_clone.on_device_connect(device_ip, connect_status);
-                    }
 
-                    if rx.changed().await.is_ok() {
-                        if let Some(reason) = rx.borrow().as_ref() {
-                            println!("Process stopped: {:?}", reason);
-                            // handle reason...
-                            if reason != &audioshare::ProcessStopReason::ExitedSuccessfully {
-                                self_clone.on_server_error(reason);
-                            } else {
-                                if let Some(win) = self_clone.main_window() {
-                                    if let Some(config_data) = win.imp().config.get() {
-                                        let mut config = config_data.borrow_mut(); // Get Ref<AppConfig>
-                                        // TODO : After starting the server save config to file
-                                        config.server_ip = win.imp().server_ip_entry.text().to_string();
-                                        config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
+                    loop{
+                        tokio::select! {
+                            Ok((device_ip, connect_status)) = device_rx.recv() => {
+                                self_clone.on_device_connect(device_ip, connect_status);
+                            }
 
-                                        let endpoint_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_endpoint_dropdown);
-                                        config.audio_endpoint = endpoint_selected_name.expect(&gettext("Failed to get endpoint dropdown string"));
+                            Ok(_) = rx.changed() => {
+                                if let Some(reason) = rx.borrow().as_ref() {
+                                    println!("Process stopped: {:?}", reason);
+                                    // handle reason...
+                                    if reason != &audioshare::ProcessStopReason::ExitedSuccessfully {
+                                        self_clone.on_server_error(reason);
+                                    } else {
+                                        if let Some(win) = self_clone.main_window() {
+                                            if let Some(config_data) = win.imp().config.get() {
+                                                let mut config = config_data.borrow_mut(); // Get Ref<AppConfig>
+                                                // TODO : After starting the server save config to file
+                                                config.server_ip = win.imp().server_ip_entry.text().to_string();
+                                                config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
 
-                                        let encoding_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_encoding_dropdown);
-                                        config.audio_encoding = encoding_selected_name.expect(&gettext("Failed to get encoding dropdown string"));
+                                                let endpoint_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_endpoint_dropdown);
+                                                config.audio_endpoint = endpoint_selected_name.expect("Failed to get endpoint dropdown string");
 
-                                        let _ = save_config(&config);
+                                                let encoding_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_encoding_dropdown);
+                                                config.audio_encoding = encoding_selected_name.expect("Failed to get encoding dropdown string");
+
+                                                let _ = save_config(&config);
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
                 });
             }
         }
@@ -704,7 +714,7 @@ impl AudiosharegtkApplication {
             notification.set_title(&gettext("Invalid Ip Address"));
             notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
         }
-
+        print!("{:?}", &reason);
         if reason == &audioshare::ProcessStopReason::InvalidBinding {
             notification.set_title(&gettext("Cannot assign requested address"));
             notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
@@ -712,7 +722,8 @@ impl AudiosharegtkApplication {
 
         if reason == &audioshare::ProcessStopReason::FirewallBlocked{
             notification.set_title(&gettext("Blocked by Local Firewall"));
-            notification.set_body(Some(&gettext("Firewall settings are blocking the incoming connection. Please add a firewall rule for ipv4 udp and tcp")));
+            let message:String = gettext("Firewall settings are blocking the incoming connection.") + " " + &gettext("Please add a firewall rule for ipv4 udp and tcp");
+            notification.set_body(Some(&message));
         }
 
         //
@@ -778,7 +789,7 @@ impl AudiosharegtkApplication {
             if let Some(config_data) = win.imp().config.get() {
                 let config = config_data.borrow(); // Get Ref<AppConfig>
 
-                let server_ip = &config.server_ip;
+                let server_ip = &audioshare::get_local_ipv4();
                 let server_port = &config.server_port;
                 let audio_endpoint = &config.audio_endpoint;
                 let audio_encoding = &config.audio_encoding;
