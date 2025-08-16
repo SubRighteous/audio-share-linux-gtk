@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-15 15:12-0400\n"
+"POT-Creation-Date: 2025-08-15 20:27-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,70 +21,122 @@ msgstr ""
 msgid "translator-credits"
 msgstr ""
 
-#: src/application.rs:457 src/application.rs:497 src/window.ui:134
+#: src/application.rs:463 src/application.rs:503 src/window.ui:136
 msgid "Start"
 msgstr ""
 
-#: src/application.rs:520
+#: src/application.rs:526
 msgid "Stop"
 msgstr ""
 
-#: src/application.rs:625
+#: src/application.rs:644
 msgid "Failed to get endpoint dropdown string"
 msgstr ""
 
-#: src/application.rs:628
+#: src/application.rs:647
 msgid "Failed to get encoding dropdown string"
 msgstr ""
 
-#: src/application.rs:649
+#: src/application.rs:668
+msgid "Device Connected"
+msgstr ""
+
+#: src/application.rs:669
+msgid "connected from the server"
+msgstr ""
+
+#: src/application.rs:673
+msgid "Device Disconnected"
+msgstr ""
+
+#: src/application.rs:674
+msgid "disconnected from the server"
+msgstr ""
+
+#: src/application.rs:704
 msgid "Invalid Ip Address"
 msgstr ""
 
-#: src/application.rs:650 src/application.rs:655
+#: src/application.rs:705 src/application.rs:710
 msgid "Please check the ip address and port then try again."
 msgstr ""
 
-#: src/application.rs:654
+#: src/application.rs:709
 msgid "Cannot assign requested address"
 msgstr ""
 
-#: src/application.rs:659
+#: src/application.rs:714
 msgid "Blocked by Local Firewall"
 msgstr ""
 
-#: src/application.rs:660
+#: src/application.rs:715
 msgid ""
 "Firewall settings are blocking the incoming connection. Please add a "
 "firewall rule for ipv4 udp and tcp"
 msgstr ""
 
-#: src/preferences_dialog.ui:19
+#: src/preferences_dialog.ui:8
 msgid "Preferences"
 msgstr ""
 
-#: src/preferences_dialog.ui:38
+#: src/preferences_dialog.ui:11
+msgid "App behavior"
+msgstr ""
+
+#: src/preferences_dialog.ui:15
 msgid "On App Startup"
 msgstr ""
 
-#: src/preferences_dialog.ui:53
+#: src/preferences_dialog.ui:16
+msgid "Change the behavior when the app starts"
+msgstr ""
+
+#: src/preferences_dialog.ui:24
 msgid "Do Nothing"
 msgstr ""
 
-#: src/preferences_dialog.ui:58
+#: src/preferences_dialog.ui:29
 msgid "Start Server"
 msgstr ""
 
-#: src/preferences_dialog.ui:64
+#: src/preferences_dialog.ui:35
 msgid "Keep Last State"
 msgstr ""
 
-#: src/preferences_dialog.ui:93
+#: src/preferences_dialog.ui:45
+msgid "On App Close"
+msgstr ""
+
+#: src/preferences_dialog.ui:46
+msgid "Change the behavior when the app closes"
+msgstr ""
+
+#: src/preferences_dialog.ui:55
 msgid "Exit"
 msgstr ""
 
-#: src/preferences_dialog.ui:98
+#: src/preferences_dialog.ui:60
 msgid "Minimize"
+msgstr ""
+
+#: src/preferences_dialog.ui:74 src/preferences_dialog.ui:79
+msgid "Notifications"
+msgstr ""
+
+#: src/preferences_dialog.ui:80
+msgid "Change what system notifications showup"
+msgstr ""
+
+#: src/preferences_dialog.ui:83
+msgid "Server Errors"
+msgstr ""
+
+#: src/preferences_dialog.ui:88
+msgid "Device Connect"
+msgstr ""
+
+#: src/preferences_dialog.ui:93
+msgid "Device Disconnect"
 msgstr ""
 
 #: src/shortcuts-dialog.ui:6
@@ -115,50 +167,50 @@ msgstr ""
 msgid "AudioShareGTK"
 msgstr ""
 
-#: src/window.ui:17
+#: src/window.ui:19
 msgid "Main Menu"
 msgstr ""
 
-#: src/window.ui:57
+#: src/window.ui:59
 msgid "Server IP"
 msgstr ""
 
-#: src/window.ui:76
+#: src/window.ui:78
 msgid "Server Port"
 msgstr ""
 
-#: src/window.ui:95
+#: src/window.ui:97
 msgid "Audio Endpoints"
 msgstr ""
 
-#: src/window.ui:109
+#: src/window.ui:111
 msgid "Audio Encoding"
 msgstr ""
 
-#: src/window.ui:135
+#: src/window.ui:137
 msgid "Start/Stop Server"
 msgstr ""
 
-#: src/window.ui:143
+#: src/window.ui:145
 msgid "Reset"
 msgstr ""
 
-#: src/window.ui:144
+#: src/window.ui:146
 msgid "Reset Server and restore default values"
 msgstr ""
 
-#: src/window.ui:162
+#: src/window.ui:164
 msgid "_Preferences"
 msgstr ""
 
-#: src/window.ui:166
+#: src/window.ui:168
 msgid "_Keyboard Shortcuts"
 msgstr ""
 
-#: src/window.ui:170
+#: src/window.ui:172
 msgid "_About AudioShareGTK"
 msgstr ""
 
-#: src/window.ui:174
+#: src/window.ui:176
 msgid "_Quit"
 msgstr ""
