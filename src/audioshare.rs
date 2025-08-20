@@ -1,10 +1,11 @@
 use get_if_addrs::get_if_addrs;
 
 use std::io::{BufRead, BufReader};
-
 use std::process::{Child, Command, Stdio};
-
 use std::sync::{Arc, Mutex};
+use std::net::TcpListener;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use tokio::sync::watch;
 use tokio::sync::broadcast;
@@ -130,7 +131,7 @@ pub fn get_audio_encoding() -> Vec<(String, String)> {
             let value = parts.next()?.trim();
 
             if key.is_empty() || value.is_empty() {
-                println!("Skipping line: {:?}", line); // Debug
+                println!("Skipping line: {:?}", line);
                 None
             } else {
                 Some((key.to_string(), value.to_string()))
@@ -152,45 +153,107 @@ pub fn get_version() {
     println!("\n{}\n", "----------");
 }
 
-fn get_firewalld_rule_exists(address: &str, port: &u16) -> bool {
-    // Try running firewall-cmd, exit early if it's not installed
-    let output = Command::new("firewall-cmd")
-        .arg("--list-rich-rules")
-        .output();
-
-    let output = match output {
-        Ok(o) if o.status.success() => o,
-        _ => return true, // If firewall-cmd doesn't exist, assume OK
-    };
-
-    let rules = String::from_utf8_lossy(&output.stdout);
-
-    let tcp_rule = format!("destination address=\"{}\" port port=\"{}\" protocol=\"tcp\"", address, port);
-    let udp_rule = format!("destination address=\"{}\" port port=\"{}\" protocol=\"udp\"", address, port);
-
-    rules.contains(&tcp_rule) && rules.contains(&udp_rule)
+#[derive(Debug)]
+pub struct FirewallTestThread {
+    pub server_child: Arc<Mutex<Option<TcpListener>>>,
+    pub running: Arc<Mutex<bool>>,
+    pub result_notifier: broadcast::Sender<bool>,
 }
 
-fn get_ufw_rule_exists(address: &str, port: &u16) -> bool {
-    let output = std::process::Command::new("ufw")
-        .arg("status")
-        .arg("numbered")
-        .output();
+impl FirewallTestThread{
+    pub fn new() -> Self {
+        let (device_tx, _rx) = broadcast::channel::<bool>(16);
+        Self {
+            server_child: Arc::new(Mutex::new(None)),
+            running: Arc::new(Mutex::new(false)),
+            result_notifier: device_tx,
+        }
+    }
 
-    let output = match output {
-        Ok(o) if o.status.success() => o,
-        _ => return true, // Assume OK if ufw is not installed
-    };
+    pub fn subscribe_result_event(&self) -> broadcast::Receiver<bool>{
+        self.result_notifier.subscribe()
+    }
 
-    let rules = String::from_utf8_lossy(&output.stdout);
-    let tcp_rule = format!("{}:{} ALLOW", address, port);
-    let udp_rule = format!("{}:{} ALLOW", address, port);
+    pub fn start(&self,server_ip: String, server_port: u16,){
+        let server_child = self.server_child.clone();
+        {
+            let guard = server_child.lock().unwrap();
+            if guard.is_some() {
+                eprintln!("Test already running");
+                return;
+            }
+        }
+        let running_guard = self.running.clone();
 
-    rules.contains(&tcp_rule) && rules.contains(&udp_rule)
-}
+        let result_notifier = self.result_notifier.clone();
 
-fn firewall_allows(address: &str, port: &u16) -> bool {
-    get_firewalld_rule_exists(address, port) && get_ufw_rule_exists(address, port)
+        {
+            // check if already running
+            let guard = server_child.lock().unwrap();
+            if guard.is_some() || *running_guard.lock().unwrap() {
+                eprint!("Test already running");
+                return;
+            }
+        }
+
+        *running_guard.lock().unwrap() = true;
+
+        std::thread::spawn(move || {
+            let addr = format!("{}:{}", server_ip, server_port);
+
+            let _result = match TcpListener::bind(&addr) {
+                Ok(listener) => {
+                    listener.set_nonblocking(true).unwrap();
+                    let start = Instant::now();
+                    let timeout = Duration::from_secs(9);
+
+                    let _guard = server_child.lock().unwrap();
+                    //*guard = Some(listener);
+
+                    let mut success = false;
+                    while start.elapsed() < timeout && *running_guard.lock().unwrap(){
+                        if let Ok((_socket, _addr)) = listener.accept() {
+                            success = true;
+                            break;
+                        }
+                        thread::sleep(Duration::from_millis(50)); // avoid busy loop
+                    }
+
+                    // Only notify if the system timer went out
+                    if *running_guard.lock().unwrap(){
+                        let _ = result_notifier.send(success);
+                    }
+
+                    success
+                }
+                Err(_) => {
+                    let _ = result_notifier.send(false);
+                    false // failed to bind
+                }
+            };
+
+
+
+        });
+    }
+
+    pub fn stop(&self) {
+       // Set running to false first so the loop sees it
+        *self.running.lock().unwrap() = false;
+
+        // Take the listener out of the Arc<Mutex<>> so the loop can’t access it anymore
+        self.server_child.lock().unwrap().take();
+
+        println!("Firewall test stopped");
+
+        //*guard = None;
+        //*running_guard = false;
+        //println!("Testing is stopped");
+    }
+
+    pub fn is_running(&self) -> bool {
+       *self.running.lock().unwrap()
+    }
 }
 
 // A message to send when the process stops
@@ -252,15 +315,6 @@ impl AudioShareServerThread {
 
         if guard.is_some() {
             eprintln!("Command already running");
-            return;
-        }
-
-         if firewall_allows(&server_ip, &server_port) == false {
-            let stop_notifier = self.process_stop_notifier.clone();
-
-            let reason = ProcessStopReason::FirewallBlocked;
-            let _ = stop_notifier.send(Some(reason));
-
             return;
         }
 

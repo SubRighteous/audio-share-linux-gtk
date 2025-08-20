@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/SubRighteous/audio-share-linux-gtk/issues\n"
-"POT-Creation-Date: 2025-08-16 11:23-0400\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-19 20:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,56 +17,72 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/application.rs:182
+#: src/application.rs:200
 msgid "translator-credits"
 msgstr ""
 
-#: src/application.rs:467 src/application.rs:507 src/window.ui:136
+#: src/application.rs:375
+msgid "AudioShare Server is running in the background."
+msgstr ""
+
+#: src/application.rs:376
+msgid "Please turn the server off then run the firewall test again."
+msgstr ""
+
+#: src/application.rs:378
+msgid "Server is Running"
+msgstr ""
+
+#: src/application.rs:578
+msgid "Firewall Test Passed"
+msgstr ""
+
+#: src/application.rs:579
+msgid "Firewall Test Failed"
+msgstr ""
+
+#: src/application.rs:661 src/application.rs:701 src/window.ui:136
 msgid "Start"
 msgstr ""
 
-#: src/application.rs:530
+#: src/application.rs:729
+msgid "Invalid Port"
+msgstr ""
+
+#: src/application.rs:730
+msgid "Please enter a number between 0 and 65535."
+msgstr ""
+
+#: src/application.rs:756
 msgid "Stop"
 msgstr ""
 
-#: src/application.rs:678
+#: src/application.rs:849
 msgid "Device Connected"
 msgstr ""
 
-#: src/application.rs:679
+#: src/application.rs:850
 msgid "connected from the server"
 msgstr ""
 
-#: src/application.rs:683
+#: src/application.rs:853
 msgid "Device Disconnected"
 msgstr ""
 
-#: src/application.rs:684
+#: src/application.rs:854
 msgid "disconnected from the server"
 msgstr ""
 
-#: src/application.rs:714
-msgid "Invalid Ip Address"
+#: src/application.rs:880
+msgid "Invalid ip address"
 msgstr ""
 
-#: src/application.rs:715 src/application.rs:720
+#: src/application.rs:881 src/application.rs:887
 msgid "Please check the ip address and port then try again."
 msgstr ""
 
-#: src/application.rs:719
+#: src/application.rs:885
 msgid "Cannot assign requested address"
-msgstr ""
-
-#: src/application.rs:724
-msgid "Blocked by Local Firewall"
-msgstr ""
-
-#: src/application.rs:725
-msgid "Firewall settings are blocking the incoming connection."
-msgstr ""
-
-#: src/application.rs:725
-msgid "Please add a firewall rule for ipv4 udp and tcp"
 msgstr ""
 
 #: src/preferences_dialog.ui:8
@@ -77,59 +93,67 @@ msgstr ""
 msgid "App behavior"
 msgstr ""
 
-#: src/preferences_dialog.ui:15
+#: src/preferences_dialog.ui:19
+msgid "Test Firewall Connection"
+msgstr ""
+
+#: src/preferences_dialog.ui:25
+msgid "Begin Test"
+msgstr ""
+
+#: src/preferences_dialog.ui:37
 msgid "On App Startup"
 msgstr ""
 
-#: src/preferences_dialog.ui:16
+#: src/preferences_dialog.ui:38
 msgid "Change the behavior when the app starts"
 msgstr ""
 
-#: src/preferences_dialog.ui:24
+#: src/preferences_dialog.ui:46
 msgid "Do Nothing"
 msgstr ""
 
-#: src/preferences_dialog.ui:29
+#: src/preferences_dialog.ui:51
 msgid "Start Server"
 msgstr ""
 
-#: src/preferences_dialog.ui:35
+#: src/preferences_dialog.ui:57
 msgid "Keep Last State"
 msgstr ""
 
-#: src/preferences_dialog.ui:45
+#: src/preferences_dialog.ui:67
 msgid "On App Close"
 msgstr ""
 
-#: src/preferences_dialog.ui:46
+#: src/preferences_dialog.ui:68
 msgid "Change the behavior when the app closes"
 msgstr ""
 
-#: src/preferences_dialog.ui:55
+#: src/preferences_dialog.ui:77
 msgid "Exit"
 msgstr ""
 
-#: src/preferences_dialog.ui:60
+#: src/preferences_dialog.ui:82
 msgid "Minimize"
 msgstr ""
 
-#: src/preferences_dialog.ui:74 src/preferences_dialog.ui:79
+#: src/preferences_dialog.ui:96 src/preferences_dialog.ui:101
 msgid "Notifications"
 msgstr ""
 
-#: src/preferences_dialog.ui:80
+#: src/preferences_dialog.ui:102
 msgid "Change what system notifications showup"
 msgstr ""
 
-#: src/preferences_dialog.ui:83
+#: src/preferences_dialog.ui:105
 msgid "Server Errors"
 msgstr ""
 
-#: src/preferences_dialog.ui:88
+#: src/preferences_dialog.ui:110
 msgid "Device Connect"
 msgstr ""
 
-#: src/preferences_dialog.ui:93
+#: src/preferences_dialog.ui:115
 msgid "Device Disconnect"
 msgstr ""
 

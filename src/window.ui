@@ -82,9 +82,9 @@
                 <child>
                   <object class="GtkEntry" id="server_port_entry">
                     <property name="placeholder-text">65530</property>
+                    <property name="max-length">5</property>
                     <property name="input-purpose">3</property>
                     <property name="input-hints">2</property>
-
                   </object>
                 </child>
               </object>

@@ -22,6 +22,7 @@ mod application;
 mod config;
 mod configfile;
 mod audioshare;
+mod apputils;
 mod window;
 
 use self::application::AudiosharegtkApplication;

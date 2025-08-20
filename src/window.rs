@@ -61,6 +61,8 @@ mod imp {
         #[template_child(id = "AudioEncoding_Box")]
         pub audio_encoding_box: TemplateChild<gtk::Box>,
 
+        pub test_firewall_button: gtk::Button,
+
         //pub label: TemplateChild<gtk::Label>
     }
 

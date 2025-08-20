@@ -1,6 +1,13 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-data/com.github.subrighteous.audiosharegtk.desktop.in
-data/com.github.subrighteous.audiosharegtk.metainfo.xml.in
-data/com.github.subrighteous.audiosharegtk.gschema.xml
-src/window.ui
+data/com.subrighteous.audiosharegtk.desktop.in
+data/com.subrighteous.audiosharegtk.metainfo.xml.in
+data/com.subrighteous.audiosharegtk.gschema.xml
+
+src/application.rs
+src/apputils.rs
+src/audioshare.rs
+src/config.rs
+src/configfile.rs
+src/main.rs
+src/window.rs

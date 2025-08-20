@@ -27,8 +27,8 @@ use once_cell::unsync::OnceCell;
 
 use std::cell::{Cell, RefCell};
 
-
 use crate::audioshare;
+use crate::apputils;
 use crate::config::VERSION;
 use crate::configfile::{get_config_path, load_or_create_config, save_config};
 use crate::AudiosharegtkWindow;
@@ -40,6 +40,8 @@ mod imp {
     pub struct AudiosharegtkApplication {
         pub is_server_active: Cell<bool>,
         pub audio_share_server_thread: OnceCell<RefCell<audioshare::AudioShareServerThread>>,
+        pub test_firewall_thread: OnceCell<RefCell<audioshare::FirewallTestThread>>,
+        pub test_firewall_button: RefCell<Option<gtk::Button>>,
     }
 
     #[glib::object_subclass]
@@ -60,7 +62,11 @@ mod imp {
             self.audio_share_server_thread
                 .set(RefCell::new(audioshare::AudioShareServerThread::new()))
                 .expect("audio_share_server_thread already set");
+            self.test_firewall_thread
+                .set(RefCell::new(audioshare::FirewallTestThread::new()))
+                .expect("test_firewall_thread already set");
         }
+
     }
 
     impl ApplicationImpl for AudiosharegtkApplication {
@@ -121,6 +127,14 @@ impl AudiosharegtkApplication {
             .build()
     }
 
+    pub fn set_test_firewall_button(&self, button: gtk::Button) {
+        *self.imp().test_firewall_button.borrow_mut() = Some(button);
+    }
+
+    pub fn get_test_firewall_button(&self) -> Option<gtk::Button> {
+        self.imp().test_firewall_button.borrow().clone()
+    }
+
     pub fn main_window(&self) -> Option<crate::window::AudiosharegtkWindow> {
         self.active_window()
             .and_then(|w| w.downcast::<crate::window::AudiosharegtkWindow>().ok())
@@ -155,6 +169,9 @@ impl AudiosharegtkApplication {
         let reset_server_settings = gio::ActionEntry::builder("reset_server_settings")
             .activate(move |app: &Self, _, _| app.action_reset_server_settings())
             .build();
+        let test_firewall = gio::ActionEntry::builder("test_firewall")
+            .activate(move |app: &Self, _,_| app.on_test_firewall())
+            .build();
         self.add_action_entries([
             force_quit_action,
             quit_action,
@@ -162,6 +179,7 @@ impl AudiosharegtkApplication {
             settings_action,
             toggle_server_action,
             reset_server_settings,
+            test_firewall,
         ]);
 
         // Setup Keyboard Shortcuts
@@ -190,7 +208,7 @@ impl AudiosharegtkApplication {
 
         about.add_link(
             "AudioShareGtk Github Page",
-            "https://github.com/subrighteous/audio-share-linux-gui/",
+            "https://github.com/SubRighteous/audio-share-linux-gtk",
         );
         about.add_link(
             "mkckr0/audio-share Github Page",
@@ -283,6 +301,12 @@ impl AudiosharegtkApplication {
             .object("notifications_disconnection")
             .expect("Failed to get notifications_disconnection");
 
+        let test_firewall_button: gtk::Button = builder
+            .object("test_firewall_button")
+            .expect("test_firewall_button not found");
+
+        self.set_test_firewall_button(test_firewall_button.clone());
+
         if let Some(win) = self.main_window() {
              if let Some(config_ref) = win.clone().imp().config.get() {
                  let config = config_ref.borrow();
@@ -334,6 +358,72 @@ impl AudiosharegtkApplication {
         }
 
         preferences.present(Some(&window));
+    }
+
+    fn on_test_firewall(&self){
+
+        if let Some(win) = self.main_window() {
+            if let Some(config_ref) = win.imp().config.get() {
+                let config = config_ref.borrow();
+                let config = config.clone();
+
+                if self.imp()
+                    .audio_share_server_thread
+                    .get()
+                    .unwrap()
+                    .borrow().is_running(){
+                    let message:String = gettext("AudioShare Server is running in the background.")
+                    + " " + &gettext("Please turn the server off then run the firewall test again.");
+
+                    apputils::show_error_notification(self, &gettext("Server is Running"), &message);
+
+                    return;
+                }
+
+                if self.imp()
+                    .test_firewall_thread
+                    .get()
+                    .unwrap()
+                    .borrow().is_running(){
+
+                    self.imp()
+                    .test_firewall_thread
+                    .get()
+                    .unwrap()
+                    .borrow()
+                    .stop();
+
+                    if let Some(test_firewall_button) = self.get_test_firewall_button() {
+                        test_firewall_button.set_label("Begin Test");
+                        test_firewall_button.remove_css_class("error");
+                    }
+
+
+                    return;
+                }
+
+                println!("Testing Connection at {}:{}", &config.server_ip, &config.server_port);
+
+                // Start Server
+                self.imp()
+                    .test_firewall_thread
+                    .get()
+                    .unwrap()
+                    .borrow()
+                    .start(
+                        config.server_ip,
+                        config.server_port,
+                );
+
+                if let Some(test_firewall_button) = self.get_test_firewall_button() {
+                        test_firewall_button.set_label("Stop Test");
+                        test_firewall_button.add_css_class("error");
+                }
+
+
+            }
+        }
+
     }
 
     fn on_start_up(&self) {
@@ -409,7 +499,7 @@ impl AudiosharegtkApplication {
                                 app.on_endpoint_dropdown_change(&item.to_string());
                             }
                         }
-                        //self.on_endpoint_dropdown_change(index);
+
                     },
                 ),
             );
@@ -432,12 +522,12 @@ impl AudiosharegtkApplication {
                                 app.on_encoding_dropdown_change(&item.to_string());
                             }
                         }
-                        //self.on_endpoint_dropdown_change(index);
+
                     },
                 ),
             );
 
-            //
+
             if let Some(config_data) = win.imp().config.get() {
                 let config = config_data.borrow(); // Get Ref<AppConfig>
 
@@ -455,6 +545,110 @@ impl AudiosharegtkApplication {
                     self.action_toggle_server();
                 }
             }
+
+            // Spawn Listener Tasks Here
+            let mut result_rx = self
+                .imp()
+                .test_firewall_thread
+                .get()
+                .expect("test_firewall_thread not initialized")
+                .borrow()
+                .subscribe_result_event();
+
+
+            // Enroll the "on_server_error" function into the server stop_event
+            let mut rx = self
+                .imp()
+                .audio_share_server_thread
+                .get()
+                .expect("AudioShareServerThread not initialized")
+                .borrow()
+                .subscribe_stop_event();
+
+            let mut device_rx = self
+                .imp()
+                .audio_share_server_thread
+                .get()
+                .expect("AudioShareServerThread not initialized")
+                .borrow()
+                .subscribe_device_event();
+
+            let self_clone = self.clone();
+            let app = self.clone();
+            let alert_dialog_title_pass = gettext("Firewall Test Passed");
+            let alert_dialog_title_fail = gettext("Firewall Test Failed");
+
+                // Assign an async function when the server process stoppped
+                // or device_connected_notifier broadcasts
+                glib::MainContext::default().spawn_local(async move {
+
+                    loop{
+                        tokio::select! {
+
+                            Ok(result) = result_rx.recv() => {
+                                if let Some(thread_cell) = app.imp().test_firewall_thread.get() {
+                                    if let Some(win) = app.main_window() {
+                                        if let Some(config_ref) = win.imp().config.get() {
+                                            let config = config_ref.borrow();
+                                            let config = config.clone();
+
+                                            if result {
+                                                apputils::show_alert_dialog(&win, &alert_dialog_title_pass, "Success, clients should be able to connect.");
+                                            }else{
+                                                let message = gettext("Could not retrieve connection from outside clients.")
+                                                + " " +  &gettext("Make sure your app is trying to connect to the server.")
+                                                + " " + &gettext("Check your firewall settings and allow tcp and ucp at")
+                                                + " " + &config.server_ip + ":" + &config.server_port.to_string();
+
+                                                apputils::show_alert_dialog(&win, &alert_dialog_title_fail, &message);
+                                            }
+
+                                            if let Some(test_firewall_button) = app.get_test_firewall_button() {
+                                                test_firewall_button.set_label("Begin Test");
+                                                test_firewall_button.remove_css_class("error");
+                                            }
+                                        }
+                                    }
+
+                                    thread_cell.borrow_mut().stop();
+                                }
+
+                            }
+
+                            Ok((device_ip, connect_status)) = device_rx.recv() => {
+                                self_clone.on_device_connect(device_ip, connect_status);
+                            }
+
+                            Ok(_) = rx.changed() => {
+                                if let Some(reason) = rx.borrow().as_ref() {
+                                    println!("Process stopped: {:?}", reason);
+                                    // handle reason...
+                                    if reason != &audioshare::ProcessStopReason::ExitedSuccessfully {
+                                        self_clone.on_server_error(reason);
+                                    } else {
+                                        if let Some(win) = self_clone.main_window() {
+                                            if let Some(config_data) = win.imp().config.get() {
+                                                let mut config = config_data.borrow_mut(); // Get Ref<AppConfig>
+                                                // TODO : After starting the server save config to file
+                                                config.server_ip = win.imp().server_ip_entry.text().to_string();
+                                                config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
+
+                                                let endpoint_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_endpoint_dropdown);
+                                                config.audio_endpoint = endpoint_selected_name.expect("Failed to get endpoint dropdown string");
+
+                                                let encoding_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_encoding_dropdown);
+                                                config.audio_encoding = encoding_selected_name.expect("Failed to get encoding dropdown string");
+
+                                                let _ = save_config(&config);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                });
         }
     }
 
@@ -523,6 +717,38 @@ impl AudiosharegtkApplication {
                     .stop();
             }
         } else {
+            if let Some(win) = self.main_window(){
+            //if let Ok(_) = self.main_window().expect("idk and don't care").imp().server_port_entry.text().parse::<u16>() || {
+            if let Ok(_) = win.imp().server_port_entry.text().parse::<u16>(){
+                println!("Valid 1");
+            }else{
+
+                if !win.imp().server_port_entry.text().is_empty(){
+                    apputils::show_error_notification(
+                        self,
+                        &gettext("Invalid Port"),
+                        &gettext("Please enter a number between 0 and 65535."),
+                    );
+                    return;
+                }
+
+                if let Some(placeholder) = win.imp().server_port_entry.placeholder_text(){
+
+                    if let Ok(_) = placeholder.to_string().parse::<u16>(){
+                        win.imp().server_port_entry.set_text(&placeholder.to_string());
+                    }
+                    else{
+                        return;
+                    }
+                }
+                else{
+                    return;
+                }
+            }
+
+
+
+
             println!("Starting the server");
             self.set_server_active(true);
 
@@ -587,26 +813,10 @@ impl AudiosharegtkApplication {
                 // Convert server_port string to u16
                 let server_port_string = win.imp().server_port_entry.text().to_string();
 
+
                 let server_port: u16 = server_port_string
                     .parse()
                     .expect("Failed to convert server port to u16");
-
-                // Enroll the "on_server_error" function into the server stop_event
-                let mut rx = self
-                    .imp()
-                    .audio_share_server_thread
-                    .get()
-                    .expect("AudioShareServerThread not initialized")
-                    .borrow()
-                    .subscribe_stop_event();
-
-                let mut device_rx = self
-                    .imp()
-                    .audio_share_server_thread
-                    .get()
-                    .expect("AudioShareServerThread not initialized")
-                    .borrow()
-                    .subscribe_device_event();
 
                 // Start Server
                 self.imp()
@@ -621,49 +831,8 @@ impl AudiosharegtkApplication {
                         encoding_key,
                     );
 
-                let self_clone = self.clone();
-
-                // Assign an async function when the server process stoppped
-                // or device_connected_notifier broadcasts
-                glib::MainContext::default().spawn_local(async move {
-
-                    loop{
-                        tokio::select! {
-                            Ok((device_ip, connect_status)) = device_rx.recv() => {
-                                self_clone.on_device_connect(device_ip, connect_status);
-                            }
-
-                            Ok(_) = rx.changed() => {
-                                if let Some(reason) = rx.borrow().as_ref() {
-                                    println!("Process stopped: {:?}", reason);
-                                    // handle reason...
-                                    if reason != &audioshare::ProcessStopReason::ExitedSuccessfully {
-                                        self_clone.on_server_error(reason);
-                                    } else {
-                                        if let Some(win) = self_clone.main_window() {
-                                            if let Some(config_data) = win.imp().config.get() {
-                                                let mut config = config_data.borrow_mut(); // Get Ref<AppConfig>
-                                                // TODO : After starting the server save config to file
-                                                config.server_ip = win.imp().server_ip_entry.text().to_string();
-                                                config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
-
-                                                let endpoint_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_endpoint_dropdown);
-                                                config.audio_endpoint = endpoint_selected_name.expect("Failed to get endpoint dropdown string");
-
-                                                let encoding_selected_name = Self::get_selected_string_from_dropdown(&win.imp().audio_encoding_dropdown);
-                                                config.audio_encoding = encoding_selected_name.expect("Failed to get encoding dropdown string");
-
-                                                let _ = save_config(&config);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                });
             }
+        }
         }
     }
 
@@ -673,16 +842,16 @@ impl AudiosharegtkApplication {
         notification.set_icon(&gio::ThemedIcon::new(
             "com.subrighteous.audiosharegtk",
         ));
+        let message;
+        let title;
 
         if connected {
-            notification.set_title(&gettext("Device Connected"));
-            let message = device_ip.clone() + " " + &gettext("connected from the server");
-            notification.set_body(Some(&message));
+            title = gettext("Device Connected");
+            message = device_ip.clone() + " " + &gettext("connected from the server");
         }
         else{
-            notification.set_title(&gettext("Device Disconnected"));
-            let message = device_ip.clone() + " " + &gettext("disconnected from the server");
-            notification.set_body(Some(&message));
+            title = gettext("Device Disconnected");
+            message = device_ip.clone() + " " + &gettext("disconnected from the server");
         }
 
         if let Some(win) = self.main_window() {
@@ -690,10 +859,10 @@ impl AudiosharegtkApplication {
             if let Some(config_data) = win.imp().config.get() {
                 let config = config_data.borrow_mut(); // Get Ref<AppConfig>
                 if config.notification_device_connect && connected{
-                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+                    apputils::show_connection_notification(self, &title , &message, &connected);
                 }
                 if config.notification_device_disconnect && !connected{
-                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+                    apputils::show_connection_notification(self, &title , &message, &connected);
                 }
 
             }
@@ -704,26 +873,18 @@ impl AudiosharegtkApplication {
     }
 
     fn on_server_error(&self, reason: &audioshare::ProcessStopReason) {
-
-        let notification = gio::Notification::new("audio_share_error");
-        notification.set_icon(&gio::ThemedIcon::new(
-            "com.subrighteous.audiosharegtk",
-        ));
+        let mut title: String = String::new();
+        let mut message: String = String::new();
 
         if reason == &audioshare::ProcessStopReason::InvalidArgument {
-            notification.set_title(&gettext("Invalid Ip Address"));
-            notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
+            title = gettext("Invalid ip address");
+            message = gettext("Please check the ip address and port then try again.");
         }
 
         if reason == &audioshare::ProcessStopReason::InvalidBinding {
-            notification.set_title(&gettext("Cannot assign requested address"));
-            notification.set_body(Some(&gettext("Please check the ip address and port then try again.")));
-        }
-
-        if reason == &audioshare::ProcessStopReason::FirewallBlocked{
-            notification.set_title(&gettext("Blocked by Local Firewall"));
-            let message:String = gettext("Firewall settings are blocking the incoming connection.") + " " + &gettext("Please add a firewall rule for ipv4 udp and tcp");
-            notification.set_body(Some(&message));
+            let title_text  = gettext("Cannot assign requested address");
+            title = title_text;
+            message = gettext("Please check the ip address and port then try again.");
         }
 
         //
@@ -732,7 +893,9 @@ impl AudiosharegtkApplication {
             if let Some(config_data) = win.imp().config.get() {
                 let config = config_data.borrow_mut(); // Get Ref<AppConfig>
                 if config.notification_error{
-                    self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
+
+                    apputils::show_error_notification(self, &title, &message);
+                    //self.send_notification(Some("com.subrighteous.audiosharegtk"), &notification);
                 }
 
             }
