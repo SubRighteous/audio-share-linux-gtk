@@ -1,0 +1,5 @@
+option('im_a_translator',
+  type: 'boolean',
+  value: false,
+  description: 'Enable translation tools (update .pot/.po files)'
+)

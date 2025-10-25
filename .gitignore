@@ -5,3 +5,9 @@ Cargo.lock
 data/as-cmd
 
 *.json~
+
+.directory
+
+builddir/
+
+po/audiosharegtk.pot

@@ -22,3 +22,15 @@ License: Apache-2.0 license [(details)](https://github.com/mkckr0/audio-share/bl
 - [audio-share](https://github.com/mkckr0/audio-share) by mkckr0
 - GTK team
 - Libadwaita and GNOME community
+
+## Building the Project with Gnome Builder
+
+To build the project using Gnome Builder, make sure you have the latest version and have flatpak build support plugin enabled in (Preferences ->  Plugins -> SDKs)
+![Screenshot of the Flatpak Support Plugin](screenshots/Gnome_Builder_Build_Install_00.png)
+Next at the startup screen select "Select A Folder", navigate to the projects root folder and then press open.
+
+When the project opens, GNOME Builder may prompt you to install the Rust toolchain or the GNOME Platform SDK. Make sure both Rust and the GNOME Platform SDK are installed. 
+
+After the SDK installation is complete, open the project configuration panel (Alt + ,), go to the Overview tab, and set the current configuration to: `com.subrighteous.audiosharegtk.json` instead of `Default`.
+![Screenshot of the Project configuration](screenshots/Gnome_Builder_Build_Install_01.png)
+Once everything is set up, you can build and run the project by pressing (Shift + Ctrl + Space)

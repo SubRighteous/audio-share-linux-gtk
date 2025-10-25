@@ -7,10 +7,12 @@ project('audiosharegtk', 'rust',
 i18n = import('i18n')
 gnome = import('gnome')
 
+if get_option('im_a_translator')
+  subdir('po')
+endif
 
 subdir('data')
 subdir('src')
-subdir('po')
 
 gnome.post_install(
      glib_compile_schemas: true,

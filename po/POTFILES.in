@@ -10,4 +10,7 @@ src/audioshare.rs
 src/config.rs
 src/configfile.rs
 src/main.rs
+src/preferences_dialog.ui
+src/shortcuts-dialog.ui
 src/window.rs
+src/window.ui
