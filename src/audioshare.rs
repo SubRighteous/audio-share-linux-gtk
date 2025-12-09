@@ -97,12 +97,17 @@ pub fn get_default_encoding() -> Option<(String, String)> {
         .find(|(name, _)| name == "default")
 }
 
-pub fn get_endpoint_position_in_dropdown(_name: &String) -> u32 {
-    get_audio_endpoints()
+pub fn get_endpoint_position_in_dropdown(_name: &str) -> u32 {
+    match get_audio_endpoints()
         .iter()
-        .position(|&(_flag, _id, ref name)| name == _name)
-        .map(|idx| idx as u32)
-        .expect("Couldn't find endpoint in Vec")
+        .position(|(_, _, endpoint_name)| endpoint_name == _name)
+    {
+        Some(idx) => idx as u32,
+        None => {
+            eprintln!("Warning : {} could not be found. Returning 0", _name);
+            0
+        }
+    }
 }
 
 pub fn get_encoding_position_in_dropdown(_name: &String) -> u32 {
