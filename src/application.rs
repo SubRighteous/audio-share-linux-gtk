@@ -847,7 +847,7 @@ impl AudiosharegtkApplication {
 
         if connected {
             title = gettext("Device Connected");
-            message = device_ip.clone() + " " + &gettext("connected from the server");
+            message = device_ip.clone() + " " + &gettext("connected to the server");
         }
         else{
             title = gettext("Device Disconnected");

@@ -5,14 +5,15 @@
   <project_license>GPL-3.0-or-later</project_license>
 
   <name>AudioShareGTK</name>
-  <summary>Keep the summary shorter, between 10 and 35 characters</summary>
+  <!-- <summary>Keep the summary shorter, between 10 and 35 characters</summary> -->
+  <summary>Share audio over the network</summary>
   <description>
     <p>
       AudioShareGtk is a Rust-based GTK 4 desktop application that uses Libadwaita for its user interface. It is designed to interact with the audio-share command-line server by mkckr0, enabling audio sharing over a local network.
     </p>
   </description>
 
-  <developer id="tld.vendor">
+  <developer id="com.github.subrighteous">
     <name>Daniel Rys</name>
   </developer>
 
@@ -36,9 +37,14 @@
   <!-- <url type="contribute">https://example.org/contribute</url> -->
 
   <translation type="gettext">audiosharegtk</translation>
+
+  <provides>
+    <id>com.subrighteous.audiosharegtk</id>
+  </provides>
+
   <!-- All graphical applications having a desktop file must have this tag in the MetaInfo.
      If this is present, appstreamcli compose will pull icons, keywords and categories from the desktop file. -->
-  <launchable type="desktop-id">com.github.subrighteous.audiosharegtk.desktop</launchable>
+  <launchable type="desktop-id">com.subrighteous.audiosharegtk.desktop</launchable>
   <!-- Use the OARS website (https://hughsie.github.io/oars/generate.html) to generate these and make sure to use oars-1.1 -->
   <content_rating type="oars-1.1" />
 
