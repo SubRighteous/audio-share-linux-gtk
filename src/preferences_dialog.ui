@@ -99,7 +99,7 @@
         <child>
           <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Notifications</property>
-            <property name="description" translatable="yes">Change what system notifications showup</property>
+            <property name="description" translatable="yes">Change what system notifications show up</property>
             <child>
               <object class="AdwSwitchRow" id="notifications_errors">
                 <property name="title" translatable="yes">Server Errors</property>
