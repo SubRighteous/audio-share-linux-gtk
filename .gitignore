@@ -11,3 +11,6 @@ data/as-cmd
 builddir/
 
 po/audiosharegtk.pot
+
+src/config.rs
+src/config.rs
