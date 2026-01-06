@@ -8,15 +8,15 @@
     ],
     "command" : "audiosharegtk",
     "finish-args" : [
-        "--share=network",
-        "--share=ipc",
-        "--device=dri",
-        "--socket=fallback-x11",
-        "--socket=wayland",
+	"--share=network",
+	"--share=ipc",
+	"--device=dri",
+	"--socket=fallback-x11",
+	"--socket=wayland",
 	"--socket=session-bus",
-    	"--talk-name=org.freedesktop.RealtimeKit1",
-    	"--talk-name=org.freedesktop.DBus",
-    	"--talk-name=org.freedesktop.portal.Desktop"
+	"--talk-name=org.freedesktop.RealtimeKit1",
+	"--talk-name=org.freedesktop.DBus",
+	"--talk-name=org.freedesktop.portal.Desktop"
 	"--filesystem=xdg-run/pipewire-0:ro"
     ],
     "build-options" : {
