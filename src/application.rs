@@ -42,6 +42,7 @@ mod imp {
         pub audio_share_server_thread: OnceCell<RefCell<audioshare::AudioShareServerThread>>,
         pub test_firewall_thread: OnceCell<RefCell<audioshare::FirewallTestThread>>,
         pub test_firewall_button: RefCell<Option<gtk::Button>>,
+        pub number_of_retry_on_failure : Cell<i8>,
     }
 
     #[glib::object_subclass]
@@ -629,7 +630,7 @@ impl AudiosharegtkApplication {
                                         if let Some(win) = self_clone.main_window() {
                                             if let Some(config_data) = win.imp().config.get() {
                                                 let mut config = config_data.borrow_mut(); // Get Ref<AppConfig>
-                                                // TODO : After starting the server save config to file
+
                                                 config.server_ip = win.imp().server_ip_entry.text().to_string();
                                                 config.server_port = win.imp().server_port_entry.text().to_string().parse().unwrap_or(config.server_port);
 
@@ -872,6 +873,29 @@ impl AudiosharegtkApplication {
 
     }
 
+    fn on_server_failed_attempt(&self){
+        self.imp().number_of_retry_on_failure.set(self.imp().number_of_retry_on_failure.get() + 1);
+
+        if self.imp().number_of_retry_on_failure.get() > 3 {
+            let app_clone = self.clone();
+
+            let title = gettext("Do you want to go back to system default?");
+            let message = gettext("It seems that the ip address doesn't seem to work. Would you like to reset the ip to the system IPv4?");
+            let confirm_button_text = gettext("Reset IP Address");
+
+            apputils::show_confirm_dialog(self,&title,&message,&confirm_button_text,
+                move || {
+                    if let Some(win) = app_clone.main_window(){
+                       win.imp().server_ip_entry.set_text(&audioshare::get_local_ipv4());
+                    }
+
+                }
+            );
+
+            self.imp().number_of_retry_on_failure.set(0);
+        }
+    }
+
     fn on_server_error(&self, reason: &audioshare::ProcessStopReason) {
         let mut title: String = String::new();
         let mut message: String = String::new();
@@ -879,12 +903,16 @@ impl AudiosharegtkApplication {
         if reason == &audioshare::ProcessStopReason::InvalidArgument {
             title = gettext("Invalid ip address");
             message = gettext("Please check the ip address and port then try again.");
+
+            self.on_server_failed_attempt();
         }
 
         if reason == &audioshare::ProcessStopReason::InvalidBinding {
             let title_text  = gettext("Cannot assign requested address");
             title = title_text;
             message = gettext("Please check the ip address and port then try again.");
+
+            self.on_server_failed_attempt();
         }
 
         //

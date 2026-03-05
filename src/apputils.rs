@@ -2,6 +2,8 @@ use gtk::{gio};
 
 use adw::prelude::*;
 
+use adw::{ResponseAppearance};
+
 const APP_ID:&str = "com.subrighteous.audiosharegtk";
 
 // pub fn show_info_notification<App: IsA<gio::Application>>(window: &App, title: &str, message: &str){
@@ -64,4 +66,34 @@ pub fn show_alert_dialog<App: IsA<gtk::Widget>>(window: &App, title: &str, messa
     dialog.add_response("ok", "OK");
 
     dialog.present(Some(window));
+}
+
+pub fn show_confirm_dialog<App: IsA<gio::Application> + GtkApplicationExt,>(app: &App, title: &str, message: &str, confirm_button_text : &str , on_confirm: impl Fn() + 'static){
+    // Create a new AlertDialog instance.
+    let dialog = adw::AlertDialog::builder()
+        .heading(title)
+        .body(message) // Use the text from our label as the body
+        .default_response("cancel")
+        .close_response("cancel")
+        .build();
+
+    dialog.add_response("cancel", "Cancel");
+    dialog.add_response("ok", confirm_button_text);
+    dialog.set_response_appearance("ok",ResponseAppearance::Destructive);
+
+
+    // Connect the response handler
+    // The dialog is non-blocking, so the logic happens in this callback.
+    dialog.connect_response(None, move |_, response_id| {
+        println!("Dialog response ID: {}", response_id);
+        // Handle the response here (e.g., perform action if "OK" was clicked)
+        if response_id == "ok" {
+            on_confirm();
+        }
+    });
+
+    let window = app.active_window()
+        .expect("No active window for dialog");
+
+    dialog.present(Some(&window));
 }
