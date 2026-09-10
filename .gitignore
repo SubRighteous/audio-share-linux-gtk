@@ -13,3 +13,4 @@ builddir/
 po/audiosharegtk.pot
 
 src/config.rs
+/repo

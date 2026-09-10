@@ -38,9 +38,6 @@
 
   <translation type="gettext">audiosharegtk</translation>
 
-  <provides>
-    <id>com.subrighteous.audiosharegtk</id>
-  </provides>
 
   <!-- All graphical applications having a desktop file must have this tag in the MetaInfo.
      If this is present, appstreamcli compose will pull icons, keywords and categories from the desktop file. -->
