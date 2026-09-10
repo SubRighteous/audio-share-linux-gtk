@@ -5,7 +5,7 @@ Cargo.lock
 data/as-cmd
 
 *.json~
-
+*.flatpak
 .directory
 
 builddir/
