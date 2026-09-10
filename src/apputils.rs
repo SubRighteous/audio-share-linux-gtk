@@ -81,12 +81,8 @@ pub fn show_confirm_dialog<App: IsA<gio::Application> + GtkApplicationExt,>(app:
     dialog.add_response("ok", confirm_button_text);
     dialog.set_response_appearance("ok",ResponseAppearance::Destructive);
 
-
-    // Connect the response handler
-    // The dialog is non-blocking, so the logic happens in this callback.
     dialog.connect_response(None, move |_, response_id| {
         println!("Dialog response ID: {}", response_id);
-        // Handle the response here (e.g., perform action if "OK" was clicked)
         if response_id == "ok" {
             on_confirm();
         }
