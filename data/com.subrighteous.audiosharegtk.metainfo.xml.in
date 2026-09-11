@@ -5,6 +5,7 @@
   <project_license>GPL-3.0-or-later</project_license>
 
   <name>AudioShareGTK</name>
+  <icon type="stock">com.subrighteous.audiosharegtk</icon>
   <!-- <summary>Keep the summary shorter, between 10 and 35 characters</summary> -->
   <summary>Share audio over the network</summary>
   <description>
@@ -12,6 +13,10 @@
       AudioShareGtk is a Rust-based GTK 4 desktop application that uses Libadwaita for its user interface. It is designed to interact with the audio-share command-line server by mkckr0, enabling audio sharing over a local network.
     </p>
   </description>
+  <categories>
+    <category>Audio</category>
+    <category>Network</category>
+  </categories>
 
   <developer id="com.github.subrighteous">
     <name>Daniel Rys</name>
@@ -68,7 +73,7 @@
 
   <releases>
     <release version="0.1.0" date="2025-08-06">
-      <url type="details">https://example.org/changelog.html#version_1.0.1</url>
+      <url type="details">https://github.com/SubRighteous/audio-share-linux-gtk/releases</url>
       <description translate="no">
         <p>Release description</p>
         <ul>
